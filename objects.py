@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 class Time:
@@ -55,6 +55,14 @@ class Name:
         self.ru_RU: str = ru_RU
         self.zh_CN: str = zh_CN
         self.zh_TW: str = zh_TW
+
+
+class Freshness:
+    __slots__ = ["freshness", "title"]
+
+    def __init__(self, freshness: float, title: Dict[str, str]):
+        self.freshness: float = freshness
+        self.title: Name = Name(**title)
 
 
 class Gender:
@@ -303,7 +311,7 @@ class User_Stats_V2:
 class User_Stats:
     __slots__ = ["v1", "v2"]
 
-    def __init__(self, v1: dict, v2: dict):
+    def __init__(self, v1, v2: dict):
         self.v1 = v1
         self.v2: User_Stats_V2 = User_Stats_V2(**v2)
 
@@ -401,10 +409,17 @@ class Gears_Gear_Gear:
 class Gears_Gear:
     __slots__ = ["gear", "primary_ability", "secondary_abilities"]
 
-    def __init__(self, gear: dict, primary_ability: dict, secondary_abilities: dict):
-        self.gear = gear
-        self.primary_ability = primary_ability
-        self.secondary_abilities = secondary_abilities
+    def __init__(
+        self, gear: dict, primary_ability: dict, secondary_abilities: List[dict]
+    ):
+        self.gear: Gears_Gear_Gear = Gears_Gear_Gear(**gear)
+        self.primary_ability: KeyAndName = KeyAndName(**primary_ability)
+        self.secondary_abilities: Optional[List[KeyAndName]] = []
+        for ability in secondary_abilities:
+            if ability is not None:
+                self.secondary_abilities.append(KeyAndName(**ability))
+        else:
+            self.secondary_abilities = None
 
 
 class Gears:
@@ -414,6 +429,121 @@ class Gears:
         self.headgear: Gears_Gear = Gears_Gear(**headgear)
         self.clothing: Gears_Gear = Gears_Gear(**clothing)
         self.shoes: Gears_Gear = Gears_Gear(**shoes)
+
+
+class Player:
+    __slots__ = [
+        "team",
+        "is_me",
+        "weapon",
+        "level",
+        "rank",
+        "star_rank",
+        "rank_in_team",
+        "kill",
+        "death",
+        "kill_or_assist",
+        "special",
+        "my_kill",
+        "point",
+        "name",
+        "specices",
+        "gender",
+        "fest_title",
+        "splatnet_id",
+        "top_500",
+        "icon",
+    ]
+
+    def __init__(
+        self,
+        team: str,
+        is_me: bool,
+        weapon: dict,
+        level: int,
+        rank: Optional[dict],
+        star_rank: int,
+        rank_in_team: Optional[int],
+        kill: int,
+        death: int,
+        kill_or_assist: int,
+        special: int,
+        my_kill,
+        point: int,
+        name: str,
+        species: Optional[dict],
+        gender: Optional[dict],
+        fest_title,
+        splatnet_id: str,
+        top_500: Optional[bool],
+        icon: str,
+    ):
+        self.team: str = team
+        self.is_me: bool = is_me
+        self.weapon: Weapon = Weapon(**weapon)
+        self.level: int = level
+        if rank is not None:
+            self.rank: Optional[Rank] = Rank(**rank)
+        else:
+            self.rank = None
+        self.star_rank: int = star_rank
+        self.rank_in_team: Optional[int] = rank_in_team
+        self.kill: int = kill
+        self.death: int = death
+        self.kill_or_assist: int = kill_or_assist
+        self.special: int = special
+        self.my_kill = my_kill
+        self.point: int = point
+        self.name: str = name
+        if species is not None:
+            self.species: Optional[KeyAndName] = KeyAndName(**species)
+        else:
+            self.species = None
+        if gender is not None:
+            self.gender: Optional[Gender] = Gender(**gender)
+        else:
+            self.gender = None
+        self.fest_title = fest_title
+        self.splatnet_id: str = splatnet_id
+        self.top_500: Optional[bool] = top_500
+        self.icon: str = icon
+
+
+class Agent_Variables:
+    __slots__ = ["upload_mode"]
+
+    def __init__(self, upload_mode: str):
+        self.upload_mode: str = upload_mode
+
+
+class Agent:
+    __slots__ = [
+        "name",
+        "version",
+        "game_version",
+        "game_version_date",
+        "custom",
+        "variables",
+    ]
+
+    def __init__(
+        self,
+        name: str,
+        version: str,
+        game_version,
+        game_version_date,
+        custom,
+        variables: Dict[str, str],
+    ):
+        self.name: str = name
+        self.version: str = version
+        self.game_version = game_version
+        self.game_version_date = game_version_date
+        self.custom = custom
+        if variables is not None:
+            self.variables: Optional[Agent_Variables] = Agent_Variables(**variables)
+        else:
+            self.variables = None
 
 
 class Battle:
@@ -515,10 +645,10 @@ class Battle:
         rule: dict,
         map: dict,
         weapon: dict,
-        freshness,
-        rank: dict,
+        freshness: Optional[dict],
+        rank: Optional[dict],
         rank_exp,
-        rank_after: dict,
+        rank_after: Optional[dict],
         rank_exp_after,
         x_power,
         x_power_after,
@@ -528,7 +658,7 @@ class Battle:
         star_rank: int,
         result: str,
         knock_out: bool,
-        rank_in_team: int,
+        rank_in_team: Optional[int],
         kill: int,
         death: int,
         kill_or_assist: int,
@@ -539,41 +669,41 @@ class Battle:
         max_kill_streak,
         death_reasons: list,
         my_point: int,
-        estimate_gachi_power: int,
+        estimate_gachi_power: Optional[int],
         league_point,
         my_team_estimate_league_point,
         his_team_estimate_league_point,
         my_team_point,
         his_team_point,
-        my_team_percent,
-        his_team_percent,
-        my_team_count: int,
-        his_team_count: int,
+        my_team_percent: Optional[str],
+        his_team_percent: Optional[str],
+        my_team_count: Optional[int],
+        his_team_count: Optional[int],
         my_team_id,
         his_team_id,
-        species: dict,
-        gender: dict,
-        fest_title,
-        fest_exp,
-        fest_title_after,
-        fest_exp_after,
-        fest_power,
-        my_team_estimate_fest_power,
-        his_team_my_team_estimate_fest_power,
-        my_team_fest_theme,
-        his_team_fest_theme,
+        species: Optional[dict],
+        gender: Optional[dict],
+        fest_title: Optional[dict],
+        fest_exp: Optional[int],
+        fest_title_after: Optional[dict],
+        fest_exp_after: Optional[int],
+        fest_power: Optional[str],
+        my_team_estimate_fest_power: Optional[int],
+        his_team_my_team_estimate_fest_power: Optional[int],
+        my_team_fest_theme: Optional[str],
+        his_team_fest_theme: Optional[str],
         my_team_nickname,
         his_team_nickname,
-        clout,
-        total_clout,
-        total_clout_after,
-        my_team_win_streak,
-        his_team_win_streak,
-        synergy_bonus,
+        clout: Optional[int],
+        total_clout: Optional[int],
+        total_clout_after: Optional[int],
+        my_team_win_streak: Optional[int],
+        his_team_win_streak: Optional[int],
+        synergy_bonus: Optional[float],
         special_battle,
         image_judge,
         image_result: str,
-        image_gear,
+        image_gear: Optional[str],
         gears: dict,
         period: int,
         period_range: str,
@@ -583,10 +713,10 @@ class Battle:
         agent: dict,
         automated: bool,
         environment,
-        link_url: str,
+        link_url: Optional[str],
         note,
         game_version: str,
-        nawabari_bonus,
+        nawabari_bonus: Optional[int],
         start_at: dict,
         end_at: dict,
         register_at: dict,
@@ -600,10 +730,19 @@ class Battle:
         self.rule: KeyAndName = KeyAndName(**rule)
         self.map: Map = Map(**map)
         self.weapon: Weapon = Weapon(**weapon)
-        self.freshness = freshness
-        self.rank: Rank = Rank(**rank)
+        if freshness is not None:
+            self.freshness: Optional[Freshness] = Freshness(**freshness)
+        else:
+            self.freshness = None
+        if rank is not None:
+            self.rank: Optional[Rank] = Rank(**rank)
+        else:
+            self.rank = None
         self.rank_exp = rank_exp
-        self.rank_after: Rank = Rank(**rank_after)
+        if rank_after is not None:
+            self.rank_after: Optional[Rank] = Rank(**rank_after)
+        else:
+            self.rank_after = None
         self.rank_exp_after = rank_exp_after
         self.x_power = x_power
         self.x_power_after = x_power_after
@@ -613,7 +752,7 @@ class Battle:
         self.star_rank: int = star_rank
         self.result: str = result
         self.knock_out: bool = knock_out
-        self.rank_in_team: int = rank_in_team
+        self.rank_in_team: Optional[int] = rank_in_team
         self.kill: int = kill
         self.death: int = death
         self.kill_or_assist: int = kill_or_assist
@@ -624,56 +763,70 @@ class Battle:
         self.max_kill_streak = max_kill_streak
         self.death_reasons = death_reasons
         self.my_point: int = my_point
-        self.estimate_gachi_power: int = estimate_gachi_power
+        self.estimate_gachi_power: Optional[int] = estimate_gachi_power
         self.league_point = league_point
         self.my_team_estimate_league_point = my_team_estimate_league_point
         self.his_team_estimate_league_point = his_team_estimate_league_point
         self.my_team_point = my_team_point
         self.his_team_point = his_team_point
-        self.my_team_percent = my_team_percent
-        self.his_team_percent = his_team_percent
-        self.my_team_count: int = my_team_count
-        self.his_team_count: int = his_team_count
+        self.my_team_percent: Optional[str] = my_team_percent
+        self.his_team_percent: Optional[str] = his_team_percent
+        self.my_team_count: Optional[int] = my_team_count
+        self.his_team_count: Optional[int] = his_team_count
         self.my_team_id = my_team_id
         self.his_team_id = his_team_id
-        self.species = species
-        self.gender = gender
-        self.fest_title = fest_title
-        self.fest_exp = fest_exp
-        self.fest_title_after = fest_title_after
-        self.fest_exp_after = fest_exp_after
-        self.fest_power = fest_power
-        self.my_team_estimate_fest_power = my_team_estimate_fest_power
-        self.his_team_my_team_estimate_fest_power = his_team_my_team_estimate_fest_power
-        self.my_team_fest_theme = my_team_fest_theme
-        self.his_team_fest_theme = his_team_fest_theme
+        if species is not None:
+            self.species: Optional[KeyAndName] = KeyAndName(**species)
+        else:
+            self.species = None
+        if gender is not None:
+            self.gender: Optional[Gender] = Gender(**gender)
+        else:
+            self.gender = None
+        if fest_title is not None:
+            self.fest_title: Optional[KeyAndName] = KeyAndName(**fest_title)
+        else:
+            self.fest_title = None
+        self.fest_exp: Optional[int] = fest_exp
+        if fest_title_after is not None:
+            self.fest_title_after: Optional[KeyAndName] = KeyAndName(**fest_title_after)
+        else:
+            self.fest_title_after = None
+        self.fest_exp_after: Optional[int] = fest_exp_after
+        self.fest_power: Optional[str] = fest_power
+        self.my_team_estimate_fest_power: Optional[int] = my_team_estimate_fest_power
+        self.his_team_my_team_estimate_fest_power: Optional[
+            int
+        ] = his_team_my_team_estimate_fest_power
+        self.my_team_fest_theme: Optional["str"] = my_team_fest_theme
+        self.his_team_fest_theme: Optional["str"] = his_team_fest_theme
         self.my_team_nickname = my_team_nickname
         self.his_team_nickname = his_team_nickname
-        self.clout = clout
-        self.total_clout = total_clout
-        self.total_clout_after = total_clout_after
-        self.my_team_win_streak = my_team_win_streak
-        self.his_team_win_streak = his_team_win_streak
-        self.synergy_bonus = synergy_bonus
+        self.clout: Optional[int] = clout
+        self.total_clout: Optional[int] = total_clout
+        self.total_clout_after: Optional[int] = total_clout_after
+        self.my_team_win_streak: Optional[int] = my_team_win_streak
+        self.his_team_win_streak: Optional[int] = his_team_win_streak
+        self.synergy_bonus: Optional[float] = synergy_bonus
         self.special_battle = special_battle
         self.image_judge = image_judge
         self.image_result: str = image_result
-        self.image_gear = image_gear
-        self.gears = gears
+        self.image_gear: Optional[str] = image_gear
+        self.gears: Gears = Gears(**gears)
         self.period: int = period
         self.period_range: str = period_range
-        self.players: list = []
+        self.players: List[Player] = []
         for player in players:
-            self.players.append(player)
+            self.players.append(Player(**player))
         self.events = events
         self.splatnet_json = splatnet_json
-        self.agent = agent
+        self.agent: Agent = Agent(**agent)
         self.automated: bool = automated
         self.environment = environment
-        self.link_url: str = link_url
+        self.link_url: Optional[str] = link_url
         self.note = note
         self.game_version: str = game_version
-        self.nawabari_bonus = nawabari_bonus
+        self.nawabari_bonus: Optional[int] = nawabari_bonus
         self.start_at: Time = Time(**start_at)
         self.end_at: Time = Time(**end_at)
         self.register_at: Time = Time(**register_at)
