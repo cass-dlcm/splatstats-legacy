@@ -4,10 +4,11 @@ import gzip
 import os
 import shutil
 import ujson
+from objects import Battle
 from typing import Dict, List, cast
 
 
-def init(mode, data_path, api_key) -> str:
+def init(mode, data_path, api_key="") -> str:
     print(mode)
     headers: Dict[str, str] = {}
     if mode == "All":
@@ -36,7 +37,11 @@ def init(mode, data_path, api_key) -> str:
         except jsonlines.jsonlines.InvalidLineError:
             os.replace(fileName[0:-6] + "Temp.jl.gz", fileName)
         prevLastId: int = 0
-        params: Dict[str, str] = {"order": "asc", "newer_than": str(recentId)}
+        params: Dict[str, str] = {
+            "order": "asc",
+            "newer_than": str(recentId),
+            "count": "50",
+        }
         temp: List[Battle] = requests.get(url, headers=headers, params=params).json()
         if len(temp) > 0:
             try:
@@ -65,7 +70,7 @@ def init(mode, data_path, api_key) -> str:
                     print(lastId)
     else:
         prevLastId = 0
-        params = {"order": "asc"}
+        params = {"order": "asc", "count": "50"}
         temp = requests.get(url, headers=headers, params=params).json()
         lastId = cast(List[Dict[str, int]], temp)[-1]["id"]
         print(lastId)
