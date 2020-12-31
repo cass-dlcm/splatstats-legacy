@@ -5,7 +5,7 @@ import os
 import shutil
 import ujson
 from objects import Battle
-from typing import Dict, List, cast
+from typing import Dict, List, cast, Union
 
 
 def init(mode, data_path, api_key="") -> str:
@@ -89,3 +89,67 @@ def init(mode, data_path, api_key="") -> str:
                     lastId = cast(List[Dict[str, int]], temp)[-1]["id"]
                 print(lastId)
     return fileName
+
+
+def hasBattles(location, data: Union[str, List[bytes]]) -> bool:
+    """
+    Check if a given data file has data.
+
+    :param data: the full path of the data file
+    :type data: str
+    :return: whether the file has jobs or not
+    :rtype: bool
+    :raises gzip.BadGzipFile: if the file exists but isn't a gzip file
+    :raises FileNotFoundError: if the file doesn't exist
+    :raises jsonlines.InvalidLineError: if the file is a gzip file of something else
+
+    :Example:
+
+    >>> import core
+    >>> core.hasBattles("data/salmon.jl.gz")
+    True
+    >>> import gzip
+    >>> with gzip.open("temp.jl.gz", "at", encoding="utf8") as writer:
+    ...     writer.write("")
+    ...
+    >>> core.hasBattles("temp.jl.gz")
+    False
+
+    """
+    try:
+        if location == "disk":
+            with gzip.open(cast(str, data)) as reader:
+                jsonlines.Reader(reader, ujson.loads).read()
+                return True
+        else:
+            jsonlines.Reader(data, ujson.loads).read()
+            return True
+    except EOFError:
+        return False
+
+
+def getValMultiDimensional(data, statArr: List[Union[str, int]]):
+    """
+    Retrieve the chosen stat from the provided data structure, using recursion.
+
+    :param data: the data structure to retrieve data from
+    :type data: Union[list, Dict[str, Any]]
+    :param statArr: the list of dimensions of the data structure needed to retrieve the stat
+    :type statArr: statArr: List[Union[str, int]
+    :return: the value retrieved
+    :rtype: str
+
+    """
+    if data is None:
+        return ""
+    if len(statArr) > 1:
+        if isinstance(statArr[0], int):
+            if len(data) > statArr[0]:
+                return getValMultiDimensional(data[statArr[0]], statArr[1:])
+            return ""
+        return getValMultiDimensional(getattr(data, statArr[0]), statArr[1:])
+    if isinstance(statArr[0], int):
+        if len(data) > statArr[0]:
+            return data[statArr[0]]
+        return ""
+    return getattr(data, statArr[0])
