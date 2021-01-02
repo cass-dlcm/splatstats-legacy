@@ -83,7 +83,7 @@ def filterBattlesCondition(location, data, attribute, values, comparison, mode):
     for val in values:
         outPath += str(val)
         filterFunctions = (
-            lambda battle=battle, val=val, attribute=attribute: getValMultiDimensional(
+            lambda battle, val=val, attribute=attribute: getValMultiDimensional(
                 battle, attribute
             )
             == val
