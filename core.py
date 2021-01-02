@@ -12,10 +12,10 @@ def init(mode, data_path, api_key="") -> str:
     print(mode)
     headers: Dict[str, str] = {}
     if mode == "All":
-        fileName: str = data_path + "salmonAll.jl.gz"
+        fileName: str = data_path + "battleAll.jl.gz"
         url: str = "http://stat.ink/api/v2/battle"
     elif mode == "User":
-        fileName = data_path + "salmon.jl.gz"
+        fileName = data_path + "battle.jl.gz"
         url = "http://stat.ink/api/v2/user-battle"
         headers = {"Authorization": "Bearer {}".format(api_key)}
     if os.path.exists(fileName):
@@ -55,6 +55,8 @@ def init(mode, data_path, api_key="") -> str:
                     for job in temp:
                         ujson.dump(job, writer)
                         writer.write("\n")
+                    writer.flush()
+                    os.fsync(writer.fileno())
                     params["newer_than"] = str(lastId)
                     result = requests.get(
                         url,
@@ -106,7 +108,7 @@ def hasBattles(location, data: Union[str, List[bytes]]) -> bool:
     :Example:
 
     >>> import core
-    >>> core.hasBattles("data/salmon.jl.gz")
+    >>> core.hasBattles("data/battle.jl.gz")
     True
     >>> import gzip
     >>> with gzip.open("temp.jl.gz", "at", encoding="utf8") as writer:
