@@ -9,7 +9,11 @@ from core import hasBattles, getValMultiDimensional
 
 
 def filterBattles(
-    location, data: Union[str, List[bytes]], filterFunctions: List[Callable], outpath, mode=""
+    location,
+    data: Union[str, List[bytes]],
+    filterFunctions: List[Callable],
+    outpath,
+    mode="",
 ) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
     if location == "disk":
         if not (
@@ -75,7 +79,9 @@ def filterBattles(
     return (jobsWith, jobsWithout)
 
 
-def filterBattlesCondition(location, data: Union[str, List[bytes]], attribute, values, comparison, mode):
+def filterBattlesCondition(
+    location, data: Union[str, List[bytes]], attribute, values, comparison, mode
+):
     filterFunctions: List[Callable] = []
     try:
         os.mkdir(cast(str, data[:-6]))
@@ -131,7 +137,7 @@ def filterBattlesCondition(location, data: Union[str, List[bytes]], attribute, v
     return filterBattles(location, data, filterFunctions, outPath, mode)
 
 
-def filterStage(location, data: Union[str, List[bytes]], stages: List[str]) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+def filterStage(
+    location, data: Union[str, List[bytes]], stages: List[str]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
     return filterBattlesCondition(location, data, ["map", "key"], stages, "=", "or")
-
-
