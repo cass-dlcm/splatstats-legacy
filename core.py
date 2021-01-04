@@ -1,6 +1,7 @@
 import requests
 import jsonlines
 import gzip
+import zlib
 import os
 import shutil
 import ujson
@@ -34,7 +35,7 @@ def init(mode, data_path, api_key="") -> str:
                         writer.write("\n")
                         recentId = line["id"]
             os.remove(fileName[0:-6] + "Temp.jl.gz")
-        except jsonlines.jsonlines.InvalidLineError:
+        except (jsonlines.jsonlines.InvalidLineError, zlib.error):
             os.replace(fileName[0:-6] + "Temp.jl.gz", fileName)
         prevLastId: int = 0
         params: Dict[str, str] = {
