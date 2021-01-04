@@ -379,11 +379,23 @@ class User:
 class Brand:
     __slots__ = ["key", "name", "strength", "weakness"]
 
-    def __init__(self, key: str, name: Dict[str, str], strength: dict, weakness: dict):
+    def __init__(
+        self,
+        key: str,
+        name: Dict[str, str],
+        strength: Optional[dict],
+        weakness: Optional[dict],
+    ):
         self.key: str = key
         self.name: Name = Name(**name)
-        self.strength: KeyAndName = KeyAndName(**strength)
-        self.weakness: KeyAndName = KeyAndName(**weakness)
+        if strength is not None:
+            self.strength: Optional[KeyAndName] = KeyAndName(**strength)
+        else:
+            self.strength = None
+        if weakness is not None:
+            self.weakness: Optional[KeyAndName] = KeyAndName(**weakness)
+        else:
+            self.weakness = None
 
 
 class Gears_Gear_Gear:
@@ -395,14 +407,17 @@ class Gears_Gear_Gear:
         type: dict,
         brand: dict,
         name: Dict[str, str],
-        primary_ability: dict,
+        primary_ability: Optional[dict],
         splatnet: int,
     ):
         self.key: str = key
         self.type: KeyAndName = KeyAndName(**type)
         self.brand: Brand = Brand(**brand)
         self.name: Name = Name(**name)
-        self.primary_ability: KeyAndName = KeyAndName(**primary_ability)
+        if primary_ability is not None:
+            self.primary_ability: Optional[KeyAndName] = KeyAndName(**primary_ability)
+        else:
+            self.primary_ability = None
         self.splatnet: int = splatnet
 
 
@@ -410,14 +425,24 @@ class Gears_Gear:
     __slots__ = ["gear", "primary_ability", "secondary_abilities"]
 
     def __init__(
-        self, gear: dict, primary_ability: dict, secondary_abilities: List[dict]
+        self,
+        gear: Optional[dict],
+        primary_ability: Optional[dict],
+        secondary_abilities: Optional[List[dict]],
     ):
-        self.gear: Gears_Gear_Gear = Gears_Gear_Gear(**gear)
-        self.primary_ability: KeyAndName = KeyAndName(**primary_ability)
+        if gear is not None:
+            self.gear: Optional[Gears_Gear_Gear] = Gears_Gear_Gear(**gear)
+        else:
+            self.gear = None
+        if primary_ability is not None:
+            self.primary_ability: Optional[KeyAndName] = KeyAndName(**primary_ability)
+        else:
+            self.primary_ability = None
         self.secondary_abilities: Optional[List[KeyAndName]] = []
-        for ability in secondary_abilities:
-            if ability is not None:
-                self.secondary_abilities.append(KeyAndName(**ability))
+        if secondary_abilities is not None:
+            for ability in secondary_abilities:
+                if ability is not None:
+                    self.secondary_abilities.append(KeyAndName(**ability))
         else:
             self.secondary_abilities = None
 
@@ -425,10 +450,21 @@ class Gears_Gear:
 class Gears:
     __slots__ = ["headgear", "clothing", "shoes"]
 
-    def __init__(self, headgear: dict, clothing: dict, shoes: dict):
-        self.headgear: Gears_Gear = Gears_Gear(**headgear)
-        self.clothing: Gears_Gear = Gears_Gear(**clothing)
-        self.shoes: Gears_Gear = Gears_Gear(**shoes)
+    def __init__(
+        self, headgear: Optional[dict], clothing: Optional[dict], shoes: Optional[dict]
+    ):
+        if headgear is not None:
+            self.headgear: Optional[Gears_Gear] = Gears_Gear(**headgear)
+        else:
+            self.headgear = None
+        if clothing is not None:
+            self.clothing: Optional[Gears_Gear] = Gears_Gear(**clothing)
+        else:
+            self.clothing = None
+        if shoes is not None:
+            self.shoes: Optional[Gears_Gear] = Gears_Gear(**shoes)
+        else:
+            self.shoes = None
 
 
 class Player:
@@ -447,7 +483,7 @@ class Player:
         "my_kill",
         "point",
         "name",
-        "specices",
+        "species",
         "gender",
         "fest_title",
         "splatnet_id",
@@ -459,7 +495,7 @@ class Player:
         self,
         team: str,
         is_me: bool,
-        weapon: dict,
+        weapon: Optional[dict],
         level: int,
         rank: Optional[dict],
         star_rank: int,
@@ -480,7 +516,10 @@ class Player:
     ):
         self.team: str = team
         self.is_me: bool = is_me
-        self.weapon: Weapon = Weapon(**weapon)
+        if weapon is not None:
+            self.weapon: Optional[Weapon] = Weapon(**weapon)
+        else:
+            self.weapon = None
         self.level: int = level
         if rank is not None:
             self.rank: Optional[Rank] = Rank(**rank)
@@ -509,13 +548,6 @@ class Player:
         self.icon: str = icon
 
 
-class Agent_Variables:
-    __slots__ = ["upload_mode"]
-
-    def __init__(self, upload_mode: str):
-        self.upload_mode: str = upload_mode
-
-
 class Agent:
     __slots__ = [
         "name",
@@ -541,7 +573,7 @@ class Agent:
         self.game_version_date = game_version_date
         self.custom = custom
         if variables is not None:
-            self.variables: Optional[Agent_Variables] = Agent_Variables(**variables)
+            self.variables: Optional[dict] = variables
         else:
             self.variables = None
 
@@ -640,11 +672,11 @@ class Battle:
         splatnet_number: int,
         url: str,
         user: dict,
-        lobby: dict,
-        mode: dict,
-        rule: dict,
-        map: dict,
-        weapon: dict,
+        lobby: Optional[dict],
+        mode: Optional[dict],
+        rule: Optional[dict],
+        map: Optional[dict],
+        weapon: Optional[dict],
         freshness: Optional[dict],
         rank: Optional[dict],
         rank_exp,
@@ -707,7 +739,7 @@ class Battle:
         gears: dict,
         period: int,
         period_range: str,
-        players: List[dict],
+        players: Optional[List[dict]],
         events,
         splatnet_json,
         agent: dict,
@@ -717,19 +749,34 @@ class Battle:
         note,
         game_version: str,
         nawabari_bonus: Optional[int],
-        start_at: dict,
-        end_at: dict,
+        start_at: Optional[dict],
+        end_at: Optional[dict],
         register_at: dict,
     ):
         self.id: int = id
         self.splatnet_number: int = splatnet_number
         self.url: str = url
         self.user: User = User(**user)
-        self.lobby: KeyAndName = KeyAndName(**lobby)
-        self.mode: KeyAndName = KeyAndName(**mode)
-        self.rule: KeyAndName = KeyAndName(**rule)
-        self.map: Map = Map(**map)
-        self.weapon: Weapon = Weapon(**weapon)
+        if lobby is not None:
+            self.lobby: Optional[KeyAndName] = KeyAndName(**lobby)
+        else:
+            self.lobby = None
+        if mode is not None:
+            self.mode: Optional[KeyAndName] = KeyAndName(**mode)
+        else:
+            self.mode = None
+        if rule is not None:
+            self.rule: Optional[KeyAndName] = KeyAndName(**rule)
+        else:
+            self.rule = None
+        if map is not None:
+            self.map: Optional[Map] = Map(**map)
+        else:
+            self.map = None
+        if weapon is not None:
+            self.weapon: Optional[Weapon] = Weapon(**weapon)
+        else:
+            self.weapon = None
         if freshness is not None:
             self.freshness: Optional[Freshness] = Freshness(**freshness)
         else:
@@ -815,9 +862,12 @@ class Battle:
         self.gears: Gears = Gears(**gears)
         self.period: int = period
         self.period_range: str = period_range
-        self.players: List[Player] = []
-        for player in players:
-            self.players.append(Player(**player))
+        self.players: Optional[List[Player]] = []
+        if players is not None:
+            for player in players:
+                self.players.append(Player(**player))
+        else:
+            self.players = None
         self.events = events
         self.splatnet_json = splatnet_json
         self.agent: Agent = Agent(**agent)
@@ -827,6 +877,12 @@ class Battle:
         self.note = note
         self.game_version: str = game_version
         self.nawabari_bonus: Optional[int] = nawabari_bonus
-        self.start_at: Time = Time(**start_at)
-        self.end_at: Time = Time(**end_at)
+        if start_at is not None:
+            self.start_at: Optional[Time] = Time(**start_at)
+        else:
+            self.start_at = None
+        if end_at is not None:
+            self.end_at: Optional[Time] = Time(**end_at)
+        else:
+            self.end_at = None
         self.register_at: Time = Time(**register_at)
