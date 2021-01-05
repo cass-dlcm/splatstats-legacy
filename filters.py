@@ -1,5 +1,5 @@
 import os.path
-from objects import Battle
+from objects import Battle, Player
 from typing import List, Union, Tuple, Callable, cast
 import gzip
 import ujson
@@ -80,7 +80,7 @@ def filterBattles(
 
 
 def filterBattlesCondition(
-    location, data: Union[str, List[bytes]], attribute, values, comparison, mode
+    location, data: Union[str, List[bytes]], attribute, values, comparison, mode=""
 ):
     filterFunctions: List[Callable] = []
     try:
@@ -141,3 +141,126 @@ def filterStage(
     location, data: Union[str, List[bytes]], stages: List[str]
 ) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
     return filterBattlesCondition(location, data, ["map", "key"], stages, "=", "or")
+
+
+def filterMode(
+    location, data: Union[str, List[bytes]], modes: List[str]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(location, data, ["mode", "key"], modes, "=", "or")
+
+
+def filterRule(
+    location, data: Union[str, List[bytes]], rules: List[str]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(location, data, ["rule", "key"], rules, "=", "or")
+
+
+def filterWeapon(
+    location, data: Union[str, List[bytes]], weapons: List[str]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(location, data, ["weapon", "key"], weapons, "=", "or")
+
+
+def filterWeaponType(
+    location, data: Union[str, List[bytes]], weaponType: List[str]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(
+        location, data, ["weapon", "type", "key"], weaponType, "=", "or"
+    )
+
+
+def filterWeaponCategory(
+    location, data: Union[str, List[bytes]], weaponCategory: List[str]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(
+        location, data, ["weapon", "type", "category", "key"], weaponCategory, "=", "or"
+    )
+
+
+def filterWeaponMainRef(
+    location, data: Union[str, List[bytes]], weaponMainRef: List[str]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(
+        location, data, ["weapon", "main_ref"], weaponMainRef, "=", "or"
+    )
+
+
+def filterRank(
+    location, data: Union[str, List[bytes]], ranks: List[str]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    filterFunctions: List[Callable] = []
+    try:
+        os.mkdir(cast(str, data[:-6]))
+    except FileExistsError:
+        pass
+    outPath = "rank"
+    for rank in ranks:
+        outPath += str(rank)
+        filterFunctions.append(
+            lambda battle, rank=rank: getValMultiDimensional(
+                battle,
+                [
+                    "user",
+                    "stats",
+                    "v2",
+                    "gachi",
+                    "rules",
+                    getValMultiDimensional(battle, ["rule", "key"]) if getValMultiDimensional(battle, ["rule", "key"]) != "nawabari" else "none",
+                    "rank_current"
+                ]
+            ) == rank
+        )
+    return filterBattles(location, data, filterFunctions, outPath, "or")
+
+
+def filterWinLoss(
+    location, data: Union[str, List[bytes]]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(location, data, ["result"], ["win"], "=")
+
+
+def filterDisconnect(
+    location, data: Union[str, List[bytes]]
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    try:
+        os.mkdir(cast(str, data[:-6]))
+    except FileExistsError:
+        pass
+    outPath = "disconnect"
+    filterFunctions: List[Callable] = [
+        lambda battle: any(
+            val.point == 0
+            for val in (
+                battle.players
+                if battle.players is not None
+                else [
+                    Player(
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    )
+                ]
+            )
+        )
+    ]
+    return filterBattles(location, data, filterFunctions, outPath)
+
+def filterStartAtInt(location, data: Union[str, List[bytes]], time, comparison):
+    return filterBattlesCondition(location, data, ["start_at", "time"], [time], comparison)
