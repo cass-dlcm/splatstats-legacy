@@ -5,6 +5,7 @@ import gzip
 import ujson
 import json
 import zlib
+import ciso8601
 from core import hasBattles, getValMultiDimensional
 
 
@@ -205,10 +206,13 @@ def filterRank(
                     "v2",
                     "gachi",
                     "rules",
-                    getValMultiDimensional(battle, ["rule", "key"]) if getValMultiDimensional(battle, ["rule", "key"]) != "nawabari" else "none",
-                    "rank_current"
-                ]
-            ) == rank
+                    getValMultiDimensional(battle, ["rule", "key"])
+                    if getValMultiDimensional(battle, ["rule", "key"]) != "nawabari"
+                    else "none",
+                    "rank_current",
+                ],
+            )
+            == rank
         )
     return filterBattles(location, data, filterFunctions, outPath, "or")
 
@@ -262,5 +266,46 @@ def filterDisconnect(
     ]
     return filterBattles(location, data, filterFunctions, outPath)
 
-def filterStartAtInt(location, data: Union[str, List[bytes]], time, comparison):
-    return filterBattlesCondition(location, data, ["start_at", "time"], [time], comparison)
+
+def filterStartAtInt(
+    location, data: Union[str, List[bytes]], time, comparison
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(
+        location, data, ["start_at", "time"], [time], comparison
+    )
+
+
+def filterStartAtString(
+    location, data: Union[str, List[bytes]], time, comparison
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterStartAtInt(location, data, ciso8601.parse_datetime(time), comparison)
+
+
+def filterEndAtInt(
+    location, data: Union[str, List[bytes]], time, comparison
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(
+        location, data, ["end_at", "time"], [time], comparison
+    )
+
+
+def filterEndAtString(
+    location, data: Union[str, List[bytes]], time, comparison
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterEndAtInt(location, data, ciso8601.parse_datetime(time), comparison)
+
+
+def filterRegisterAtInt(
+    location, data: Union[str, List[bytes]], time, comparison
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterBattlesCondition(
+        location, data, ["register_at", "time"], [time], comparison
+    )
+
+
+def filterRegisterAtString(
+    location, data: Union[str, List[bytes]], time, comparison
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    return filterRegisterAtInt(
+        location, data, ciso8601.parse_datetime(time), comparison
+    )
