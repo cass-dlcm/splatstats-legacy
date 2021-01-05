@@ -169,13 +169,14 @@ class Ranked_Rank:
 
 
 class User_Stats_V2_Gachi_Rules:
-    __slots__ = ["area", "yagura", "hoko", "asari"]
+    __slots__ = ["area", "yagura", "hoko", "asari", "none"]
 
     def __init__(self, area: dict, yagura: dict, hoko: dict, asari: dict):
-        self.arena: Ranked_Rank = Ranked_Rank(**area)
+        self.area: Ranked_Rank = Ranked_Rank(**area)
         self.yagura: Ranked_Rank = Ranked_Rank(**yagura)
         self.hoko: Ranked_Rank = Ranked_Rank(**hoko)
         self.asari: Ranked_Rank = Ranked_Rank(**asari)
+        self.none = None
 
 
 class User_Stats_V2_Gachi:
@@ -373,7 +374,7 @@ class User:
         self.join_at: Time = Time(**join_at)
         self.profile: User_Profile = User_Profile(**profile)
         self.stat = stat
-        self.stats = stats
+        self.stats: User_Stats = User_Stats(**stats)
 
 
 class Brand:
@@ -493,47 +494,47 @@ class Player:
 
     def __init__(
         self,
-        team: str,
-        is_me: bool,
+        team: Optional[str],
+        is_me: Optional[bool],
         weapon: Optional[dict],
-        level: int,
+        level: Optional[int],
         rank: Optional[dict],
-        star_rank: int,
+        star_rank: Optional[int],
         rank_in_team: Optional[int],
-        kill: int,
-        death: int,
-        kill_or_assist: int,
-        special: int,
+        kill: Optional[int],
+        death: Optional[int],
+        kill_or_assist: Optional[int],
+        special: Optional[int],
         my_kill,
-        point: int,
-        name: str,
+        point: Optional[int],
+        name: Optional[str],
         species: Optional[dict],
         gender: Optional[dict],
         fest_title,
-        splatnet_id: str,
+        splatnet_id: Optional[str],
         top_500: Optional[bool],
-        icon: str,
+        icon: Optional[str],
     ):
-        self.team: str = team
-        self.is_me: bool = is_me
+        self.team: Optional[str] = team
+        self.is_me: Optional[bool] = is_me
         if weapon is not None:
             self.weapon: Optional[Weapon] = Weapon(**weapon)
         else:
             self.weapon = None
-        self.level: int = level
+        self.level: Optional[int] = level
         if rank is not None:
             self.rank: Optional[Rank] = Rank(**rank)
         else:
             self.rank = None
-        self.star_rank: int = star_rank
+        self.star_rank: Optional[int] = star_rank
         self.rank_in_team: Optional[int] = rank_in_team
-        self.kill: int = kill
-        self.death: int = death
-        self.kill_or_assist: int = kill_or_assist
-        self.special: int = special
+        self.kill: Optional[int] = kill
+        self.death: Optional[int] = death
+        self.kill_or_assist: Optional[int] = kill_or_assist
+        self.special: Optional[int] = special
         self.my_kill = my_kill
-        self.point: int = point
-        self.name: str = name
+        self.point: Optional[int] = point
+        self.name: Optional[str] = name
         if species is not None:
             self.species: Optional[KeyAndName] = KeyAndName(**species)
         else:
@@ -543,9 +544,9 @@ class Player:
         else:
             self.gender = None
         self.fest_title = fest_title
-        self.splatnet_id: str = splatnet_id
+        self.splatnet_id: Optional[str] = splatnet_id
         self.top_500: Optional[bool] = top_500
-        self.icon: str = icon
+        self.icon: Optional[str] = icon
 
 
 class Agent:
