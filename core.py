@@ -7,6 +7,7 @@ import shutil
 import ujson
 from objects import Battle
 from typing import Dict, List, cast, Union
+import json
 
 
 def init(mode, data_path, api_key="") -> str:
@@ -144,15 +145,25 @@ def getValMultiDimensional(data, statArr: List[Union[str, int]]):
 
     """
     if data is None:
-        return ""
+        return 0
     if len(statArr) > 1:
         if isinstance(statArr[0], int):
             if len(data) > statArr[0]:
                 return getValMultiDimensional(data[statArr[0]], statArr[1:])
-            return ""
+            return 0
         return getValMultiDimensional(getattr(data, statArr[0]), statArr[1:])
     if isinstance(statArr[0], int):
         if len(data) > statArr[0]:
             return data[statArr[0]]
-        return ""
+        return 0
     return getattr(data, statArr[0])
+
+
+def prettyPrintJsonLines(inPath, outPath):
+    with gzip.open(inPath) as reader:
+        with open(outPath, "w") as writer:
+            writer.write("[")
+            for line in reader:
+                json.dump(json.loads(line), writer, indent=4)
+                writer.write(",\n")
+            writer.write("]")
