@@ -227,3 +227,11 @@ def prettyPrintJsonLines(inPath, outPath):
                 json.dump(json.loads(line), writer, indent=4)
                 writer.write(",\n")
             writer.write("]")
+
+
+def loadBattlesFromFile(data) -> List[bytes]:
+    battles: List[bytes] = []
+    with gzip.open(data) as reader:
+        for line in reader:
+            battles.append(zlib.compress(line))
+    return battles
