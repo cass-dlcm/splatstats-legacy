@@ -159,6 +159,66 @@ def getValMultiDimensional(data, statArr: List[Union[str, int]]):
     return getattr(data, statArr[0])
 
 
+def getPlayerIdByName(location, data: Union[str, List[bytes]], name) -> List[str]:
+    ids: List[str] = []
+    if location == "disk":
+        with gzip.open(cast(str, data)) as reader:
+            for line in reader:
+                battle: Battle = Battle(**ujson.loads(line))
+                if battle.players is not None:
+                    for player in battle.players:
+                        if (
+                            player.name is not None
+                            and player.splatnet_id is not None
+                            and player.name == name
+                            and player.splatnet_id not in ids
+                        ):
+                            ids.append(player.splatnet_id)
+    else:
+        for battleLine in cast(List[bytes], data):
+            battle = Battle(**ujson.loads(zlib.decompress(battleLine)))
+            if battle.players is not None:
+                for player in battle.players:
+                    if (
+                        player.name is not None
+                        and player.splatnet_id is not None
+                        and player.name == name
+                        and player.splatnet_id not in ids
+                    ):
+                        ids.append(player.splatnet_id)
+    return ids
+
+
+def getNamesOfPlayer(location, data: Union[str, List[bytes]], player) -> List[str]:
+    names: List[str] = []
+    if location == "disk":
+        with gzip.open(cast(str, data)) as reader:
+            for line in reader:
+                battle: Battle = Battle(**ujson.loads(line))
+                if battle.players is not None:
+                    for player in battle.players:
+                        if (
+                            player.splatnet_id is not None
+                            and player.name is not None
+                            and player.splatnet_id == player
+                            and player.name not in names
+                        ):
+                            names.append(player.name)
+    else:
+        for battleLine in cast(List[bytes], data):
+            battle = Battle(**ujson.loads(zlib.decompress(battleLine)))
+            if battle.players is not None:
+                for player in battle.players:
+                    if (
+                        player.splatnet_id is not None
+                        and player.name is not None
+                        and player.splatnet_id == player
+                        and player.name not in names
+                    ):
+                        names.append(player.name)
+    return names
+
+
 def prettyPrintJsonLines(inPath, outPath):
     with gzip.open(inPath) as reader:
         with open(outPath, "w") as writer:
