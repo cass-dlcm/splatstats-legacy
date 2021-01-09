@@ -5,9 +5,10 @@ import zlib
 import os
 import shutil
 import ujson
-from objects import Battle
-from typing import Dict, List, cast, Union
+from objects import Battle, KeyAndName
+from typing import Dict, List, cast, Union, Optional
 import json
+import GzipFile
 
 
 def init(mode, data_path, api_key="") -> str:
@@ -162,30 +163,25 @@ def getValMultiDimensional(data, statArr: List[Union[str, int]]):
 def getPlayerIdByName(location, data: Union[str, List[bytes]], name) -> List[str]:
     ids: List[str] = []
     if location == "disk":
-        with gzip.open(cast(str, data)) as reader:
-            for line in reader:
-                battle: Battle = Battle(**ujson.loads(line))
-                if battle.players is not None:
-                    for player in battle.players:
-                        if (
-                            player.name is not None
-                            and player.splatnet_id is not None
-                            and player.name == name
-                            and player.splatnet_id not in ids
-                        ):
-                            ids.append(player.splatnet_id)
+        reader: Union[GzipFile, List[bytes]] = gzip.open(cast(str, data))
     else:
-        for battleLine in cast(List[bytes], data):
-            battle = Battle(**ujson.loads(zlib.decompress(battleLine)))
-            if battle.players is not None:
-                for player in battle.players:
-                    if (
-                        player.name is not None
-                        and player.splatnet_id is not None
-                        and player.name == name
-                        and player.splatnet_id not in ids
-                    ):
-                        ids.append(player.splatnet_id)
+        reader = cast(List[bytes], data)
+    for line in reader:
+        if location == "disk":
+            battle: Battle = Battle(**ujson.loads(line))
+        else:
+            battle = Battle(**ujson.loads(zlib.decompress(line)))
+        if battle.players is not None:
+            for player in battle.players:
+                if (
+                    player.name is not None
+                    and player.splatnet_id is not None
+                    and player.name == name
+                    and player.splatnet_id not in ids
+                ):
+                    ids.append(player.splatnet_id)
+    if location == "disk":
+        cast(GzipFile, reader).close()
     return ids
 
 
@@ -235,3 +231,69 @@ def loadBattlesFromFile(data) -> List[bytes]:
         for line in reader:
             battles.append(zlib.compress(line))
     return battles
+
+
+def findPeriodByMapsAndModes(
+    location, data: Union[str, List[bytes]], maps: List[str], mode, rule
+) -> List[int]:
+    periods: List[int] = []
+    if location == "disk":
+        reader: Union[GzipFile, List[bytes]] = gzip.open(cast(str, data))
+    else:
+        reader = cast(List[bytes], data)
+    for line in reader:
+        if location == "disk":
+            battle: Battle = Battle(**ujson.loads(line))
+        else:
+            battle = Battle(**ujson.loads(zlib.decompress(line)))
+        if (
+            (
+                battle.map is not None
+                and (battle.map.key == maps[0] or battle.map.key == maps[1])
+            )
+            and battle.mode == mode
+            and battle.rule == rule
+        ) and battle.period not in periods:
+            periods.append(battle.period)
+    if location == "disk":
+        cast(GzipFile, reader).close()
+    return periods
+
+
+def findMapsAndModesByPeriod(
+    location, data: Union[str, List[bytes]], period
+) -> Dict[str, Dict[str, Dict[str, Union[List[KeyAndName], Optional[KeyAndName]]]]]:
+    result: Dict[str, dict] = {
+        "fest": {
+            "standard": {"stages": [], "rule": None},
+            "squad_4": {"stages": [], "rule": None},
+            "fest_normal": {"stages": [], "rule": None},
+        },
+        "gachi": {
+            "standard": {"stages": [], "rule": None},
+            "squad_2": {"stages": [], "rule": None},
+            "squad_4": {"stages": [], "rule": None},
+        },
+        "regular": {"standard": {"stages": [], "rule": None}},
+        "private": {"private": {"stages": [], "rule": None}},
+    }
+    if location == "disk":
+        reader: Union[GzipFile, List[bytes]] = gzip.open(cast(str, data))
+    else:
+        reader = data
+    for line in reader:
+        if location == "disk":
+            battle: Battle = Battle(**ujson.loads(line))
+        else:
+            battle = Battle(**ujson.loads(zlib.decompress(line)))
+        if (
+            battle.period == period
+            and battle.mode is not None
+            and battle.lobby is not None
+            and battle.map not in result[battle.mode.key][battle.lobby.key]
+        ):
+            result[battle.mode.key][battle.lobby.key]["stages"].append(battle.map)
+            result[battle.mode.key][battle.lobby.key]["rule"] = battle.rule
+    if location == "disk":
+        cast(GzipFile, reader).close()
+    return result
