@@ -196,7 +196,7 @@ def filterRank(
         pass
     outPath = "rank"
     for rank in ranks:
-        outPath += str(rank)
+        outPath += rank
         filterFunctions.append(
             lambda battle, rank=rank: getValMultiDimensional(
                 battle,
@@ -221,6 +221,66 @@ def filterWinLoss(
     location, data: Union[str, List[bytes]]
 ) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
     return filterBattlesCondition(location, data, ["result"], ["win"], "=")
+
+
+def filterWithPlayers(
+    location, data: Union[str, List[bytes]], players: List[str], mode
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    try:
+        os.mkdir(cast(str, data[:-6]))
+    except FileExistsError:
+        pass
+    outPath = "withPlayers"
+    filterFunctions: List[Callable] = []
+    for player in players:
+        filterFunctions.append(
+            lambda battle, player=player: any(
+                val.splatnet_id == player and val.team == "my"
+                for val in (getValMultiDimensional(battle, ["players"]))
+            )
+        )
+        outPath += player + mode
+    return filterBattles(location, data, filterFunctions, outPath, mode)
+
+
+def filterAgainstPlayers(
+    location, data: Union[str, List[bytes]], players: List[str], mode
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    try:
+        os.mkdir(cast(str, data[:-6]))
+    except FileExistsError:
+        pass
+    outPath = "againstPlayers"
+    filterFunctions: List[Callable] = []
+    for player in players:
+        filterFunctions.append(
+            lambda battle, player=player: any(
+                val.splatnet_id == player and val.team == "his"
+                for val in (getValMultiDimensional(battle, ["players"]))
+            )
+        )
+        outPath += player + mode
+    return filterBattles(location, data, filterFunctions, outPath, mode)
+
+
+def filterIncludesPlayers(
+    location, data: Union[str, List[bytes]], players: List[str], mode
+) -> Union[Tuple[str, str], Tuple[List[bytes], List[bytes]]]:
+    try:
+        os.mkdir(cast(str, data[:-6]))
+    except FileExistsError:
+        pass
+    outPath = "includesPlayers"
+    filterFunctions: List[Callable] = []
+    for player in players:
+        filterFunctions.append(
+            lambda battle, player=player: any(
+                val.splatnet_id == player
+                for val in (getValMultiDimensional(battle, ["players"]))
+            )
+        )
+        outPath += player + mode
+    return filterBattles(location, data, filterFunctions, outPath, mode)
 
 
 def filterDisconnect(
