@@ -8,7 +8,7 @@ import ujson
 from objects import Battle, KeyAndName
 from typing import Dict, List, cast, Union, Optional
 import json
-import GzipFile
+from gzip import GzipFile
 
 
 def init(mode, data_path, api_key="") -> str:
@@ -280,7 +280,7 @@ def findMapsAndModesByPeriod(
     if location == "disk":
         reader: Union[GzipFile, List[bytes]] = gzip.open(cast(str, data))
     else:
-        reader = data
+        reader = cast(List[bytes], data)
     for line in reader:
         if location == "disk":
             battle: Battle = Battle(**ujson.loads(line))
