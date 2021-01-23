@@ -1,5 +1,4 @@
 import requests
-import jsonlines
 import gzip
 import zlib
 import os
@@ -32,12 +31,13 @@ def init(mode, data_path, api_key="") -> str:
                 with gzip.open(
                     fileName[0:-6] + "Temp.jl.gz", "at", encoding="utf8"
                 ) as writer:
-                    for line in jsonlines.Reader(reader, ujson.loads):
-                        ujson.dump(line, writer)
+                    for line in reader:
+                        job = ujson.loads(line)
+                        writer.write(ujson.dumps(job))
                         writer.write("\n")
-                        recentId = line["id"]
+                        recentId = job["id"]
             os.remove(fileName[0:-6] + "Temp.jl.gz")
-        except (jsonlines.jsonlines.InvalidLineError, zlib.error):
+        except (zlib.error):
             os.replace(fileName[0:-6] + "Temp.jl.gz", fileName)
         prevLastId: int = 0
         params: Dict[str, str] = {
@@ -106,7 +106,6 @@ def hasBattles(location, data: Union[str, List[bytes]]) -> bool:
     :rtype: bool
     :raises gzip.BadGzipFile: if the file exists but isn't a gzip file
     :raises FileNotFoundError: if the file doesn't exist
-    :raises jsonlines.InvalidLineError: if the file is a gzip file of something else
 
     :Example:
 
@@ -124,10 +123,10 @@ def hasBattles(location, data: Union[str, List[bytes]]) -> bool:
     try:
         if location == "disk":
             with gzip.open(cast(str, data)) as reader:
-                jsonlines.Reader(reader, ujson.loads).read()
+                ujson.loads(reader.read())
                 return True
         else:
-            jsonlines.Reader(data, ujson.loads).read()
+            ujson.loads(reader.read())
             return True
     except EOFError:
         return False
@@ -215,7 +214,7 @@ def getNamesOfPlayer(location, data: Union[str, List[bytes]], player) -> List[st
     return names
 
 
-def prettyPrintJsonLines(inPath, outPath):
+def prettyPrintJson(inPath, outPath):
     with gzip.open(inPath) as reader:
         with open(outPath, "w") as writer:
             writer.write("[")

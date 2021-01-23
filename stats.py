@@ -1,7 +1,6 @@
 from typing import Union, List, cast, Dict
 from core import getValMultiDimensional
 from objects import Battle
-import numpy as np
 import sys
 import ujson
 import zlib
